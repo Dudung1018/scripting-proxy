@@ -1,14 +1,19 @@
-export async function onRequest({ params }) {
+export async function onRequest(context) {
+  const { params } = context
+
+  // ⭐ 关键：如果是根路径，直接放行静态页面
+  if (!params.path) {
+    return context.next()
+  }
+
   const GITHUB_USER = "Dudung1018"
   const REPO = "scripting"
   const BRANCH = "main"
 
-  const path = params.path?.join("/") || ""
-  if (!path) {
-    return new Response("Usage: /file-path", { status: 400 })
-  }
+  const path = params.path.join("/")
 
   const url = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}/${BRANCH}/${path}`
+
   const res = await fetch(url)
 
   return new Response(res.body, {
