@@ -1,9 +1,14 @@
 export async function onRequest(context) {
   const { params } = context
 
-  // ⭐ 关键：如果是根路径，直接放行静态页面
+  // ⭐ 根路径：返回说明页（或放行 public/index.html）
   if (!params.path) {
-    return context.next()
+    return new Response(
+      "GitHub Raw Proxy is running.\nUsage: /your-file-path",
+      { status: 200 }
+    )
+    // 如果你想用 public/index.html：
+    // return context.next()
   }
 
   const GITHUB_USER = "Dudung1018"
@@ -11,7 +16,6 @@ export async function onRequest(context) {
   const BRANCH = "main"
 
   const path = params.path.join("/")
-
   const url = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO}/${BRANCH}/${path}`
 
   const res = await fetch(url)
@@ -19,8 +23,9 @@ export async function onRequest(context) {
   return new Response(res.body, {
     status: res.status,
     headers: {
-      "Content-Type": res.headers.get("Content-Type") || "application/octet-stream",
-      "Cache-Control": "no-cache"
+      "Content-Type":
+        res.headers.get("Content-Type") || "application/octet-stream",
+      "Cache-Control": "public, max-age=300"
     }
   })
 }
